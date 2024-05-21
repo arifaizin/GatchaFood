@@ -27,12 +27,13 @@ class BakingViewModel : ViewModel() {
     )
 
     fun sendPrompt(
-        place: String
+        type: String = "",
+        place: String = "Bandung"
     ) {
         _uiState.value = UiState.Loading
 
         val prompt = """
-Berikan saya 2 rekomendasi restoran makanan di $place dalam format json object yang berisi field 
+Berikan saya 10 rekomendasi restoran $type makanan di $place dalam format json object yang berisi field 
 judul, alamat, jumlah ulasan, rating, range harga, dan ringkasan. Please provide a response in a structured JSON format that matches the following model: $jsonModel'
         """.trimIndent()
 

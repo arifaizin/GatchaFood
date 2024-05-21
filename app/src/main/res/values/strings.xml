@@ -2,7 +2,7 @@
     <string name="app_name">GatchaFood</string>
     <string name="action_go">Go</string>
     <string name="baking_title">GatchaFood</string>
-    <string name="label_prompt">Prompt</string>
+    <string name="label_prompt">Mau makan apa?</string>
     <string name="prompt_placeholder">Bandung</string>
     <string name="image1_description">Blueberry cookies</string>
     <string name="image2_description">Homemade bread</string>

@@ -1,6 +1,9 @@
 package com.arif.gatchafood
 
 import android.graphics.BitmapFactory
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -73,7 +76,7 @@ fun BakingScreen(
     val selectedImage = remember { mutableIntStateOf(0) }
     val placeholderPrompt = stringResource(R.string.prompt_placeholder)
     val placeholderResult = jsonModel
-    var prompt by rememberSaveable { mutableStateOf(placeholderPrompt) }
+    var prompt by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf(placeholderResult) }
     val uiState by bakingViewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -159,7 +162,6 @@ fun BakingScreen(
             var restaurantName by rememberSaveable { mutableStateOf("") }
             val coroutineScope = rememberCoroutineScope()
 
-
             val judulArrayList = arrayListOf<String>()
             restaurants.forEach { restaurant ->
                 judulArrayList.add(restaurant.judul.toString())
@@ -170,6 +172,7 @@ fun BakingScreen(
                 val job = coroutineScope.launch {
                     while (isActive) {
                         restaurantName = judulArrayList.random()
+                        restaurants.filter { it.judul == restaurantName }
                         delay(100)
                     }
                 }
@@ -179,7 +182,7 @@ fun BakingScreen(
 
                     job.cancel()
                 }
-            }) {
+            }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Text(text = "Pilihin aku dong!")
             }
 
@@ -190,7 +193,6 @@ fun BakingScreen(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(16.dp)
-                    .fillMaxSize()
                     .verticalScroll(scrollState)
             )
 
@@ -281,12 +283,12 @@ fun RestaurantListItem(restaurant: RestaurantResponseItem) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-            Column {
-                restaurant.ringkasan?.forEach { summaryPoint ->
-                    Text(text = "- $summaryPoint", style = MaterialTheme.typography.bodyMedium)
-                }
-            }
+//            Divider(modifier = Modifier.padding(vertical = 8.dp))
+//            Column {
+//                restaurant.ringkasan?.forEach { summaryPoint ->
+//                    Text(text = "- $summaryPoint", style = MaterialTheme.typography.bodyMedium)
+//                }
+//            }
         }
     }
 }
