@@ -44,17 +44,19 @@ class BakingViewModel : ViewModel() {
         apiKey = BuildConfig.apiKey
     )
 
-    fun filter(name: String){
+    fun filter(name: String) {
         _filter.value = name
         _filteruiState.value =
             UiState.Success((_uiState.value as UiState.Success).outputText.filter {
                 it.judul == name
             })
     }
+
     fun sendPrompt(
         type: String = "",
         place: String = "Bandung"
     ) {
+        _filteruiState.value = UiState.Initial
         _uiState.value = UiState.Loading
 
         val prompt = """
@@ -69,7 +71,8 @@ judul, alamat, jumlah ulasan, rating, range harga, dan ringkasan. Please provide
                     Log.d("outputContent", outputContent)
 
                     val gson = Gson()
-                    val restaurantListType = object : TypeToken<List<RestaurantResponseItem>>() {}.type
+                    val restaurantListType =
+                        object : TypeToken<List<RestaurantResponseItem>>() {}.type
                     val restaurants: List<RestaurantResponseItem> =
                         gson.fromJson(outputContent, restaurantListType)
 

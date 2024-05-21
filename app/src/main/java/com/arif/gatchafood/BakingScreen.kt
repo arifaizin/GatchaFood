@@ -101,6 +101,7 @@ fun BakingScreen(
 //                )
 //            }
 //        }
+        var showList by remember { mutableStateOf(true) }
 
         Row(
             modifier = Modifier.padding(all = 16.dp)
@@ -122,6 +123,7 @@ fun BakingScreen(
 //                        images[selectedImage.intValue]
 //                    )
                     bakingViewModel.sendPrompt(prompt)
+                    showList = true
                 },
                 enabled = prompt.isNotEmpty(),
                 modifier = Modifier
@@ -130,12 +132,6 @@ fun BakingScreen(
                 Text(text = stringResource(R.string.action_go))
             }
         }
-
-    if (filteruiState is UiState.Success) {
-        val restaurants = (filteruiState as UiState.Success).outputText
-        RestaurantListItem(restaurants[0])
-    }
-
 
     if (uiState is UiState.Loading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -181,42 +177,33 @@ fun BakingScreen(
                     Text(text = "Pilihin aku dong!")
                 }
 
-                Text(
-                    text = restaurantName,
-                    textAlign = TextAlign.Start,
-                    color = textColor,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(16.dp)
-                        .verticalScroll(scrollState)
-                )
+                if (filteruiState is UiState.Success) {
+                    val restaurants = (filteruiState as UiState.Success).outputText
+                    if (restaurants.isNotEmpty()) {
+                        RestaurantListItem(restaurants[0])
+                        showList = false
+                    }
+                }
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
+//                Text(
+//                    text = restaurantName,
+//                    textAlign = TextAlign.Start,
+//                    color = textColor,
+//                    modifier = Modifier
+//                        .align(Alignment.CenterHorizontally)
+//                        .padding(16.dp)
+//                        .verticalScroll(scrollState)
+//                )
+
+                AnimatedVisibility(
+                    visible = showList,
                 ) {
-                    itemsIndexed(restaurants) { index, image ->
-//                    var imageModifier = Modifier
-//                        .padding(start = 8.dp, end = 8.dp)
-//                        .requiredSize(200.dp)
-//                        .clickable {
-//                            selectedImage.intValue = index
-//                        }
-//                    if (index == selectedImage.intValue) {
-//                        imageModifier =
-//                            imageModifier.border(
-//                                BorderStroke(
-//                                    4.dp,
-//                                    MaterialTheme.colorScheme.primary
-//                                )
-//                            )
-//                    }
-//                    Image(
-//                        painter = painterResource(image),
-//                        contentDescription = stringResource(imageDescriptions[index]),
-//                        modifier = imageModifier
-//                    )
-//                    Text(text = image.judul.toString())
-                        RestaurantListItem(image)
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        itemsIndexed(restaurants) { index, image ->
+                            RestaurantListItem(image)
+                        }
                     }
                 }
 //            Text(
