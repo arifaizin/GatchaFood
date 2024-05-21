@@ -1,31 +1,57 @@
 package com.arif.gatchafood
 
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.json.JSONArray
 
 class BakingViewModel : ViewModel() {
+
     private val _uiState: MutableStateFlow<UiState> =
         MutableStateFlow(UiState.Initial)
     val uiState: StateFlow<UiState> =
         _uiState.asStateFlow()
+
+    private val _filteruiState: MutableStateFlow<UiState> =
+        MutableStateFlow(UiState.Initial)
+    val filteruiState: StateFlow<UiState> =
+        _filteruiState.asStateFlow()
+
+    private val _filter: MutableStateFlow<String> =
+        MutableStateFlow("")
+    val filter: StateFlow<String> =
+        _filter.asStateFlow()
+
+    init {
+        val gson = Gson()
+        val restaurantListType = object : TypeToken<List<RestaurantResponseItem>>() {}.type
+        val restaurants: List<RestaurantResponseItem> =
+            gson.fromJson(jsonModel, restaurantListType)
+        _uiState.value = UiState.Success(restaurants)
+    }
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-pro",
         apiKey = BuildConfig.apiKey
     )
 
+    fun filter(name: String){
+        _filter.value = name
+        _uiState.update {
+            UiState.Success((it as UiState.Success).outputText.filter {
+                it.judul == name
+            })
+        }
+    }
     fun sendPrompt(
         type: String = "",
         place: String = "Bandung"
@@ -42,7 +68,13 @@ judul, alamat, jumlah ulasan, rating, range harga, dan ringkasan. Please provide
                 val response = generativeModel.generateContent(prompt)
                 response.text?.let { outputContent ->
                     Log.d("outputContent", outputContent)
-                    _uiState.value = UiState.Success(outputContent)
+
+                    val gson = Gson()
+                    val restaurantListType = object : TypeToken<List<RestaurantResponseItem>>() {}.type
+                    val restaurants: List<RestaurantResponseItem> =
+                        gson.fromJson(outputContent, restaurantListType)
+
+                    _uiState.value = UiState.Success(restaurants)
                 }
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.localizedMessage ?: "")
