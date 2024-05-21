@@ -46,11 +46,10 @@ class BakingViewModel : ViewModel() {
 
     fun filter(name: String){
         _filter.value = name
-        _uiState.update {
-            UiState.Success((it as UiState.Success).outputText.filter {
+        _filteruiState.value =
+            UiState.Success((_uiState.value as UiState.Success).outputText.filter {
                 it.judul == name
             })
-        }
     }
     fun sendPrompt(
         type: String = "",

@@ -132,7 +132,7 @@ fun BakingScreen(
         }
 
     if (filteruiState is UiState.Success) {
-        val restaurants = (uiState as UiState.Success).outputText
+        val restaurants = (filteruiState as UiState.Success).outputText
         RestaurantListItem(restaurants[0])
     }
 
