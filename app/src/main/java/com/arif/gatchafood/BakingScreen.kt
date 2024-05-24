@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -39,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
@@ -62,10 +60,10 @@ fun BakingScreen(
     bakingViewModel: BakingViewModel = viewModel()
 ) {
     val selectedImage = remember { mutableIntStateOf(0) }
-    val placeholderPrompt = stringResource(R.string.prompt_placeholder)
+    val defaultPlace = stringResource(R.string.prompt_placeholder)
+    var place by rememberSaveable { mutableStateOf(defaultPlace) }
     val placeholderResult = jsonModel
     var prompt by rememberSaveable { mutableStateOf("") }
-//    var result by rememberSaveable { mutableStateOf(placeholderResult) }
     val uiState by bakingViewModel.uiState.collectAsState()
     val filteruiState by bakingViewModel.filteruiState.collectAsState()
     val filter by bakingViewModel.filter.collectAsState()
@@ -80,27 +78,6 @@ fun BakingScreen(
             modifier = Modifier.padding(16.dp)
         )
 
-//        LazyRow(
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            itemsIndexed(images) { index, image ->
-//                var imageModifier = Modifier
-//                    .padding(start = 8.dp, end = 8.dp)
-//                    .requiredSize(200.dp)
-//                    .clickable {
-//                        selectedImage.intValue = index
-//                    }
-//                if (index == selectedImage.intValue) {
-//                    imageModifier =
-//                        imageModifier.border(BorderStroke(4.dp, MaterialTheme.colorScheme.primary))
-//                }
-//                Image(
-//                    painter = painterResource(image),
-//                    contentDescription = stringResource(imageDescriptions[index]),
-//                    modifier = imageModifier
-//                )
-//            }
-//        }
         var showList by remember { mutableStateOf(true) }
 
         Row(
@@ -118,10 +95,6 @@ fun BakingScreen(
 
             Button(
                 onClick = {
-//                    val bitmap = BitmapFactory.decodeResource(
-//                        context.resources,
-//                        images[selectedImage.intValue]
-//                    )
                     bakingViewModel.sendPrompt(prompt)
                     showList = true
                 },
@@ -144,12 +117,6 @@ fun BakingScreen(
                 textColor = MaterialTheme.colorScheme.onSurface
 //                result = (uiState as UiState.Success).outputText
                 val scrollState = rememberScrollState()
-
-//                val gson = Gson()
-//                val restaurantListType = object : TypeToken<List<RestaurantResponseItem>>() {}.type
-//                val restaurants: List<RestaurantResponseItem> =
-//                    gson.fromJson((uiState as UiState.Success).outputText, restaurantListType)
-
                 val restaurants = (uiState as UiState.Success).outputText
                 var restaurantName by rememberSaveable { mutableStateOf("") }
                 val coroutineScope = rememberCoroutineScope()
@@ -180,20 +147,10 @@ fun BakingScreen(
                 if (filteruiState is UiState.Success) {
                     val restaurants = (filteruiState as UiState.Success).outputText
                     if (restaurants.isNotEmpty()) {
-                        RestaurantListItem(restaurants[0])
+                        RestaurantListItem(restaurants[0], place)
                         showList = false
                     }
                 }
-
-//                Text(
-//                    text = restaurantName,
-//                    textAlign = TextAlign.Start,
-//                    color = textColor,
-//                    modifier = Modifier
-//                        .align(Alignment.CenterHorizontally)
-//                        .padding(16.dp)
-//                        .verticalScroll(scrollState)
-//                )
 
                 AnimatedVisibility(
                     visible = showList,
@@ -202,20 +159,10 @@ fun BakingScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         itemsIndexed(restaurants) { index, image ->
-                            RestaurantListItem(image)
+                            RestaurantListItem(image, place)
                         }
                     }
                 }
-//            Text(
-//                text = result,
-//                textAlign = TextAlign.Start,
-//                color = textColor,
-//                modifier = Modifier
-//                    .align(Alignment.CenterHorizontally)
-//                    .padding(16.dp)
-//                    .fillMaxSize()
-//                    .verticalScroll(scrollState)
-//            )
             }
         }
     }
@@ -223,7 +170,7 @@ fun BakingScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RestaurantListItem(restaurant: RestaurantResponseItem) {
+fun RestaurantListItem(restaurant: RestaurantResponseItem, place: String) {
     var expanded by remember { mutableStateOf(false) }
     Card(
         onClick = { expanded = !expanded },
@@ -285,7 +232,7 @@ fun RestaurantListItem(restaurant: RestaurantResponseItem) {
                     }
                     val uriHandler = LocalUriHandler.current
                     Button(onClick = {
-                        uriHandler.openUri("https://www.google.com/maps/search/${restaurant.judul}")
+                        uriHandler.openUri("https://www.google.com/maps/search/${restaurant.judul} $place")
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(text = "Meluncur ke lokasi")
                     }
